@@ -1,0 +1,364 @@
+@import "tailwindcss/preflight";
+@tailwind utilities;
+
+
+:root {
+    --bg-main: #f8faf9;
+    --bg-card: #ffffff;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+
+    --border-subtle: #e5e7eb;
+
+
+    --green-main: #5f8f73;
+    --green-dark: #4a725c;
+    --green-soft: #e6f0ea;
+
+    --accent-blue: #3b82f6;
+    --accent-red: #dc2626;
+
+    --ring: rgba(95, 143, 115, 0.35);
+}
+
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background:
+            radial-gradient(1200px 600px at top, #eef5f1, transparent),
+            var(--bg-main);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+
+    font-family:
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+}
+
+
+h1, h2, h3, h4 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+}
+
+p {
+    line-height: 1.6;
+}
+
+
+.page-container {
+    max-width: 42rem;
+    margin-inline: auto;
+    padding: 2.5rem 1rem;
+}
+
+.page-container > * + * {
+    margin-top: 1.25rem;
+}
+
+
+.card {
+    background-color: var(--bg-card);
+    border-radius: 1rem;
+    border: 1px solid var(--border-subtle);
+    box-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.04),
+            0 12px 28px rgba(0, 0, 0, 0.05);
+}
+
+.card-padding {
+    padding: 1.25rem;
+}
+
+
+.input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-subtle);
+    background-color: #f9fafb;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.95rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus {
+    outline: none;
+    background-color: white;
+    border-color: var(--green-main);
+    box-shadow: 0 0 0 3px var(--ring);
+}
+
+.input + .input {
+    margin-top: 0.75rem;
+}
+
+
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(180deg, #6fa489, var(--green-main));
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(180deg, var(--green-main), var(--green-dark));
+}
+
+.btn-danger {
+    background-color: #fee2e2;
+    color: var(--accent-red);
+}
+
+form > .btn {
+    margin-top: 0.5rem;
+}
+
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(180deg, var(--green-main), var(--green-dark));
+    color: white;
+}
+
+.navbar > div {
+    display: flex;
+    gap: 1rem;
+}
+
+.navbar-link {
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.navbar-link:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+
+.reaction {
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background-color: #f1f5f9;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+
+article img {
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-subtle);
+}
+
+article a {
+    color: var(--green-dark);
+    text-decoration: underline;
+}
+
+
+.poll {
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background-color: #f9fafb;
+}
+
+.poll-option {
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-subtle);
+    background-color: white;
+}
+
+.poll-option.active {
+    background-color: var(--green-soft);
+    border-color: var(--green-main);
+}
+
+.page-container .card + .btn-danger {
+    margin-top: 1.5rem;
+}
+
+
+.post-type-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.post-type-btn {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background-color: #f8fafc;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.post-type-btn.active {
+    background-color: var(--green-soft);
+    color: var(--green-dark);
+    border-color: var(--green-main);
+}
+
+
+.poll-editor {
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.poll-add-option {
+    align-self: flex-start;
+    font-size: 0.85rem;
+    color: var(--green-dark);
+}
+
+.poll-add-option:hover {
+    text-decoration: underline;
+}
+
+
+.poll {
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background-color: #f9fafb;
+}
+
+.poll-option {
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-subtle);
+    background-color: white;
+    font-size: 0.9rem;
+}
+
+.poll-option + .poll-option {
+    margin-top: 0.5rem;
+}
+
+.poll-option.active {
+    background-color: var(--green-soft);
+    border-color: var(--green-main);
+}
+
+.form-block {
+    margin-bottom: 0.75rem;
+}
+
+.ephemeral-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ephemeral-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.ephemeral-select {
+    width: auto;
+    min-width: 7rem;
+}
+
+.post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.55rem;
+}
+
+.lens-actions {
+    margin-top: 1.1rem;
+}
+
+@layer components {
+    .post-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .post-comments {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+    .post-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 1rem;
+        padding-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+@layer components {
+    .post-author {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+    .post-t {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        font-weight: 400;
+        font-size: 0.90rem;
+    }
+
+    .post-author-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-main);
+    }
+    .post-title {
+        font-weight: 400;
+        font-size: 0.85rem;
+        color: var(--text-main);
+        font-style: italic;
+    }
+
+    .post-author-date {
+        font-size: 0.70rem;
+        color: var(--text-muted);
+
+    }
+}
+
+
+
+
