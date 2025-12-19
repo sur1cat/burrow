@@ -1,25 +1,82 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@apollo/client/react";
+import { useRouter } from "next/navigation";
+import { LOGIN } from "@/graphql/mutations/auth";
 import { useAuthStore } from "@/store/auth.store";
 
+//m
+interface LoginResponse {
+    login: {
+        token: string;
+        user: {
+            id: string;
+            email: string;
+            username: string;
+        };
+    };
+}
+
+interface LoginVariables {
+    email: string;
+    password: string;
+}
+
+
+
+
 export default function LoginPage() {
+    const router = useRouter();
+    const setSession = useAuthStore((state) => state.setSession);
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const setSession = useAuthStore((state) => state.setSession);
+
+    //m    const [login, { loading, error }] = useMutation(LOGIN);
+    const [login, { loading, error }] = useMutation<
+        LoginResponse,
+        LoginVariables
+    >(LOGIN);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        console.log({ email, password });
-        setSession("dummy-token", { email });
+        try {
+            const { data } = await login({
+                variables: { email, password },
+            });
+
+            const token = data?.login?.token;
+            const user = data?.login?.user;
+
+            if (!token || !user) {
+                throw new Error("Invalid login response");
+            }
+
+            // Store token for Apollo auth header
+            localStorage.setItem("token", token);
+
+            // Store in Zustand
+            setSession(token, user);
+
+            // Redirect to feed
+            router.push("/feed");
+        } catch (err) {
+            if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error(err);
+            }
+        }
+
     };
 
     return (
         <div className="flex items-center justify-center min-h-screen">
             <form
                 onSubmit={handleSubmit}
-                className="card card-padding max-w-md space-y-4"
+                className="card card-padding max-w-md space-y-4 w-full"
             >
                 <h2 className="text-2xl">Login</h2>
 
@@ -30,6 +87,7 @@ export default function LoginPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="input"
+                        required
                     />
                 </div>
 
@@ -40,14 +98,22 @@ export default function LoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="input"
+                        required
                     />
                 </div>
+
+                {error && (
+                    <p className="text-red-600 text-sm">
+                        {error.message}
+                    </p>
+                )}
 
                 <button
                     type="submit"
                     className="btn btn-primary w-full"
+                    disabled={loading}
                 >
-                    Login
+                    {loading ? "Logging in..." : "Login"}
                 </button>
             </form>
         </div>
@@ -56,7 +122,8 @@ export default function LoginPage() {
 
 
 
-//w/o styling
+
+
 // "use client";
 //
 // import { useState } from "react";
@@ -75,29 +142,36 @@ export default function LoginPage() {
 //     };
 //
 //     return (
-//         <div className="flex justify-center items-center min-h-screen">
+//         <div className="flex items-center justify-center min-h-screen">
 //             <form
 //                 onSubmit={handleSubmit}
-//                 className="bg-white p-8 rounded shadow-md w-full max-w-md"
+//                 className="card card-padding max-w-md space-y-4"
 //             >
-//                 <h2 className="text-2xl font-bold mb-6">Login</h2>
-//                 <label className="block mb-2">Email</label>
-//                 <input
-//                     type="email"
-//                     value={email}
-//                     onChange={(e) => setEmail(e.target.value)}
-//                     className="w-full p-2 border rounded mb-4"
-//                 />
-//                 <label className="block mb-2">Password</label>
-//                 <input
-//                     type="password"
-//                     value={password}
-//                     onChange={(e) => setPassword(e.target.value)}
-//                     className="w-full p-2 border rounded mb-6"
-//                 />
+//                 <h2 className="text-2xl">Login</h2>
+//
+//                 <div>
+//                     <label className="block mb-1">Email</label>
+//                     <input
+//                         type="email"
+//                         value={email}
+//                         onChange={(e) => setEmail(e.target.value)}
+//                         className="input"
+//                     />
+//                 </div>
+//
+//                 <div>
+//                     <label className="block mb-1">Password</label>
+//                     <input
+//                         type="password"
+//                         value={password}
+//                         onChange={(e) => setPassword(e.target.value)}
+//                         className="input"
+//                     />
+//                 </div>
+//
 //                 <button
 //                     type="submit"
-//                     className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
+//                     className="btn btn-primary w-full"
 //                 >
 //                     Login
 //                 </button>
@@ -105,3 +179,4 @@ export default function LoginPage() {
 //         </div>
 //     );
 // }
+//
