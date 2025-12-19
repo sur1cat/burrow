@@ -179,12 +179,7 @@ article a {
 }
 
 
-.poll {
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.75rem;
-    padding: 0.75rem;
-    background-color: #f9fafb;
-}
+
 
 .poll-option {
     border-radius: 0.5rem;
@@ -233,6 +228,8 @@ article a {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+
+    margin-top: 0.75rem;
 }
 
 .poll-add-option {
@@ -251,6 +248,9 @@ article a {
     border-radius: 0.75rem;
     padding: 0.75rem;
     background-color: #f9fafb;
+
+    margin-bottom: 1rem;
+    margin-top:1rem;
 }
 
 .poll-option {
@@ -305,6 +305,10 @@ article a {
     margin-top: 1.1rem;
 }
 
+.post-footer {
+    margin-top: 0.5rem;
+}
+
 @layer components {
     .post-meta {
         display: flex;
@@ -357,7 +361,39 @@ article a {
         color: var(--text-muted);
 
     }
+
+    .ephemeral-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 0.65rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+
+        background-color: var(--green-soft);
+        color: var(--green-dark);
+
+        border: 1px solid #bbf7d0;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1.5;
+    }
+
 }
+.ephemeral-row {
+    margin-top: 0.5rem;
+}
+
+.post-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    margin-bottom: 0.1rem;
+}
+
+
+
 
 
 

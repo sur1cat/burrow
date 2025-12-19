@@ -85,7 +85,7 @@ export default function PostCard({ post }: { post: PostCardPost }) {
                 <div className="post-t">
                     <h2 className="post-title">{post.title}</h2>
                     {isEphemeral && badgeText && (
-                        <span className="inline-block text-xs px-2 py-1 rounded border">
+                        <span className="ephemeral-badge">
               {badgeText}
             </span>
                     )}
@@ -116,11 +116,14 @@ export default function PostCard({ post }: { post: PostCardPost }) {
             )}
 
             {post.type === "poll" && post.poll && (
-                <div className="poll space-y-2">
-                    <p className="font-semibold">{post.poll.question}</p>
-                    <PollRenderer options={post.poll.options} />
+                <div className="poll-block">
+                    <div className="poll">
+                        <p className="font-semibold">{post.poll.question}</p>
+                        <PollRenderer options={post.poll.options} />
+                    </div>
                 </div>
             )}
+
 
             <footer className="post-footer">
                 <div className="post-meta">

@@ -33,7 +33,7 @@ export default function CreatePostForm() {
         if (!title.trim()) return;
         if (!content.trim()) return;
 
-        // Validate by type
+        // valideer met type
         if (type === "link" && !linkUrl.trim()) return;
         if (type === "image" && !imageUrl.trim()) return;
         if (type === "poll") {
@@ -88,7 +88,7 @@ export default function CreatePostForm() {
             <div className="form-block">
                 <PostTypeSelector value={type} onChange={setType} />
             </div>
-            <div className="space-y-3 mb-5">
+            <div className="post-body">
                 <input
                     className="input"
                     value={title}
@@ -102,7 +102,7 @@ export default function CreatePostForm() {
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Write something..."
                 />
-            </div>
+
 
 
             {type === "link" && (
@@ -128,7 +128,7 @@ export default function CreatePostForm() {
                     onChange={(p) => setPoll(p)}
                 />
             )}
-
+            </div>
             <div className="ephemeral-row">
                 <label className="ephemeral-label">
                     <input
