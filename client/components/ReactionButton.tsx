@@ -19,25 +19,14 @@ export default function ReactionButton({
     const [localCount, setLocalCount] = useState(count);
 
     const handleClick = () => {
-        setActive((prevActive) => {
-            const nextActive = !prevActive;
-
-            setLocalCount((prevCount) =>
-                nextActive ? prevCount + 1 : Math.max(prevCount - 1, 0)
-            );
-
-            return nextActive;
+        setActive((prev) => {
+            const next = !prev;
+            setLocalCount((c) => (next ? c + 1 : Math.max(c - 1, 0)));
+            return next;
         });
 
-        if (onClick) {
-            onClick();
-        }
+        onClick?.();
     };
-
-    const baseClasses = "reaction";
-    const activeClasses = active
-        ? "bg-green-500 text-white"
-        : "";
 
     return (
         <button
@@ -45,7 +34,7 @@ export default function ReactionButton({
             onClick={handleClick}
             aria-pressed={active}
             aria-label={ariaLabel}
-            className={`${baseClasses} ${activeClasses}`}
+            className={`reaction ${active ? "bg-green-500 text-white" : ""}`}
         >
             <span>👍</span>
             <span>{localCount}</span>
@@ -55,7 +44,9 @@ export default function ReactionButton({
 
 
 
-//w/o styling
+
+
+//m
 // "use client";
 //
 // import { useState } from "react";
@@ -66,7 +57,6 @@ export default function ReactionButton({
 //     initialActive?: boolean;
 //     onClick?: () => void;
 // }
-//
 //
 // export default function ReactionButton({
 //                                            count,
@@ -93,11 +83,10 @@ export default function ReactionButton({
 //         }
 //     };
 //
-//     const baseClasses =
-//         "inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs transition";
+//     const baseClasses = "reaction";
 //     const activeClasses = active
-//         ? "bg-blue-500 text-white border-blue-500"
-//         : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50";
+//         ? "bg-green-500 text-white"
+//         : "";
 //
 //     return (
 //         <button
@@ -112,3 +101,4 @@ export default function ReactionButton({
 //         </button>
 //     );
 // }
+//
