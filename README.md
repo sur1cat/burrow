@@ -56,6 +56,8 @@ Burrow is a modern social platform that allows users to:
 | avatar | String | Avatar URL |
 | role | Enum | user/moderator/admin |
 | isDeleted | Boolean | Soft delete flag |
+| savedPosts | [ObjectId] | Saved post references |
+| lastSeen | Date | Last activity timestamp |
 
 #### Post
 | Field | Type | Description |
@@ -99,7 +101,7 @@ Burrow is a modern social platform that allows users to:
 | user | ObjectId | Reference to User |
 | targetType | Enum | post/comment |
 | targetId | ObjectId | Reference to target |
-| type | Enum | like/love/laugh/wow/sad/angry |
+| type | Enum | like/dislike/love/laugh/wow/sad/angry |
 
 ### Relationships
 - User → Posts (one-to-many)
@@ -192,20 +194,23 @@ npm run dev
 
 ## GraphQL API
 
-### Queries (8 total)
+### Queries (10 total)
 - `me` - Get current authenticated user
 - `user(id)` - Get user by ID
+- `userByUsername(username)` - Get user by username
 - `users` - List all users
+- `checkUsernameAvailable(username)` - Check username availability (Bloom filter)
 - `posts` - List posts with filters and pagination
 - `post(id)` - Get post by ID
 - `postsByUser(userId)` - Get posts by user
 - `comments(postId)` - Get comments for a post
 - `lenses` - Get available lenses
 
-### Mutations (12 total)
+### Mutations (17 total)
 - `register` - Register new user
 - `login` - Authenticate user
 - `updateProfile` - Update user profile
+- `changePassword` - Change password
 - `deleteAccount` - Delete user account
 - `createPost` - Create new post
 - `updatePost` - Update existing post
@@ -215,6 +220,9 @@ npm run dev
 - `updateComment` - Update comment
 - `deleteComment` - Delete comment
 - `toggleReaction` - Toggle reaction on post/comment
+- `savePost` - Save post to user's saved list
+- `unsavePost` - Remove post from saved list
+- `heartbeat` - Update online status
 - `createLens` - Create custom lens
 - `updateLens` - Update lens
 - `deleteLens` - Delete lens
@@ -223,6 +231,28 @@ npm run dev
 - `commentAdded(postId)` - Real-time comment updates
 - `postUpdated` - Real-time post updates
 - `reactionToggled` - Real-time reaction updates
+
+## Additional Features
+
+### Bloom Filter (Username Availability)
+- Server-side Bloom filter for fast username checks
+- Reduces database queries during registration
+- Real-time feedback in registration form
+
+### Online Status
+- Heartbeat mechanism (every 2 minutes)
+- 5-minute online threshold
+- Visual indicator on user profiles
+
+### Saved Posts
+- Save/unsave posts
+- Dedicated saved posts page (`/saved`)
+- Persisted to user profile
+
+### Seen Posts Tracking (Client)
+- Client-side Bloom filter
+- Tracks viewed posts
+- Visual distinction for seen posts
 
 ## Testing Real-time Features
 

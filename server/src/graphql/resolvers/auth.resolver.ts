@@ -2,6 +2,7 @@ import { User } from '../../models';
 import { generateToken } from '../../utils/auth';
 import { AuthenticationError, ConflictError, NotFoundError } from '../../utils/errors';
 import { validate, registerSchema, loginSchema } from '../../utils/validators';
+import { usernameBloomFilter } from '../../utils/username-bloom-filter';
 import { Context } from '../context';
 
 export interface RegisterInput {
@@ -39,6 +40,8 @@ export const authResolvers = {
         email: validatedInput.email.toLowerCase(),
         password: validatedInput.password,
       });
+
+      usernameBloomFilter.add(user.username);
 
       const token = generateToken(user);
 
@@ -117,11 +120,50 @@ export const authResolvers = {
       return user;
     },
 
+    userByUsername: async (_: unknown, { username }: { username: string }) => {
+      const user = await User.findOne({ username, isDeleted: false });
+      if (!user) {
+        throw new NotFoundError('User');
+      }
+      return user;
+    },
+
     users: async (_: unknown, { limit = 20, offset = 0 }: { limit?: number; offset?: number }) => {
       return User.find({ isDeleted: false })
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit);
+    },
+
+    checkUsernameAvailable: async (_: unknown, { username }: { username: string }) => {
+      if (!username || username.length < 3) {
+        return { available: false, reason: 'Username must be at least 3 characters' };
+      }
+
+      if (username.length > 30) {
+        return { available: false, reason: 'Username cannot exceed 30 characters' };
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return { available: false, reason: 'Username can only contain letters, numbers, and underscores' };
+      }
+
+      const mightExist = usernameBloomFilter.mightExist(username);
+
+      if (!mightExist) {
+        return { available: true, reason: null };
+      }
+
+      const existingUser = await User.findOne({
+        username: { $regex: new RegExp(`^${username}$`, 'i') },
+        isDeleted: false,
+      });
+
+      if (existingUser) {
+        return { available: false, reason: 'Username already taken' };
+      }
+
+      return { available: true, reason: null };
     },
   },
 };

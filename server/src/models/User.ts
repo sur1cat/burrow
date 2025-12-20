@@ -9,8 +9,10 @@ export interface IUser extends Document {
   bio: string;
   avatar: string;
   role: 'user' | 'moderator' | 'admin';
+  savedPosts: mongoose.Types.ObjectId[];
   isDeleted: boolean;
   lastLoginAt: Date | null;
+  lastSeen: Date | null;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -60,11 +62,19 @@ const userSchema = new Schema<IUser>(
       enum: ['user', 'moderator', 'admin'],
       default: 'user',
     },
+    savedPosts: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Post',
+    }],
     isDeleted: {
       type: Boolean,
       default: false,
     },
     lastLoginAt: {
+      type: Date,
+      default: null,
+    },
+    lastSeen: {
       type: Date,
       default: null,
     },

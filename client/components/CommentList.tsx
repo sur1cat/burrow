@@ -46,36 +46,3 @@ export default function CommentList({ postId }: { postId: string }) {
         </div>
     );
 }
-
-
-
-
-
-//m
-// "use client";
-//
-// import { mockComments } from "@/graphql/mock/comments";
-//
-// export default function CommentList({ postId }: { postId: string }) {
-//     const comments = mockComments.filter((c) => c.postId === postId);
-//
-//     if (comments.length === 0) {
-//         return <p className="text-sm text-slate-500">No comments yet.</p>;
-//     }
-//
-//     return (
-//         <div className="space-y-4">
-//             {comments.map((c) => (
-//                 <div key={c.id} className="card card-padding">
-//                     <p className="text-sm">{c.text}</p>
-//                     <p className="text-xs text-slate-500">
-//                         by {c.author.username} at{" "}
-//                         {new Date(c.createdAt).toLocaleString()}
-//                     </p>
-//                 </div>
-//             ))}
-//         </div>
-//     );
-// }
-//
-//

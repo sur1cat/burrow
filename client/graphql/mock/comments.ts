@@ -1,5 +1,3 @@
-// graphql/mock/comments.ts
-
 export interface MockComment {
     id: string;
     postId: string;

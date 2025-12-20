@@ -1,36 +1,216 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Burrow Client
+
+Next.js frontend for Burrow - a Reddit-like social platform.
+
+## Tech Stack
+
+- **Next.js 16** - React framework with App Router
+- **React 19** - UI library
+- **Apollo Client** - GraphQL client
+- **Zustand** - State management
+- **Tailwind CSS** - Styling
+- **TypeScript** - Type safety
+- **Zod** - Validation
+- **React Hook Form** - Form handling
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js >= 18
+- Running GraphQL server (see `/server`)
+
+### Installation
+
+```bash
+npm install
+```
+
+### Environment Variables
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_GRAPHQL_HTTP=http://localhost:4000/graphql
+NEXT_PUBLIC_GRAPHQL_WS=ws://localhost:4000/graphql
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+client/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Auth pages (login, register)
+│   │   ├── login/
+│   │   └── register/
+│   ├── (main)/            # Main app pages
+│   │   ├── feed/          # Posts feed
+│   │   ├── saved/         # Saved posts
+│   │   ├── profile/       # User profile (edit)
+│   │   └── thread/[id]/   # Post detail
+│   ├── user/[username]/   # Public user profile
+│   ├── globals.css        # Global styles
+│   └── layout.tsx         # Root layout
+│
+├── components/            # React components
+│   ├── CommentForm.tsx
+│   ├── CommentList.tsx
+│   ├── CreatePostForm.tsx
+│   ├── HeartbeatProvider.tsx
+│   ├── ImageUpload.tsx
+│   ├── Navbar.tsx
+│   ├── OnlineIndicator.tsx
+│   ├── PostCard.tsx
+│   ├── ProtectedRoute.tsx
+│   ├── Sidebar.tsx
+│   ├── ThemeToggle.tsx
+│   └── poll/
+│       ├── PollDisplay.tsx
+│       └── PollEditor.tsx
+│
+├── graphql/               # GraphQL operations
+│   ├── mutations/
+│   │   ├── auth.ts
+│   │   ├── comments.ts
+│   │   └── posts.ts
+│   ├── queries/
+│   │   ├── posts.ts
+│   │   └── users.ts
+│   └── subscriptions/
+│       └── comments.ts
+│
+├── hooks/                 # Custom React hooks
+│   ├── useAuth.ts
+│   └── useHeartbeat.ts
+│
+├── lib/                   # Utilities
+│   ├── apollo-client.ts   # Apollo Client setup
+│   ├── bloom-filter.ts    # Seen posts tracking
+│   ├── lens-utils.ts      # Lens filtering
+│   └── validators.ts      # Zod schemas
+│
+├── providers/             # Context providers
+│   └── ApolloProvider.tsx
+│
+├── store/                 # Zustand stores
+│   ├── auth.store.ts      # Auth state
+│   └── theme.store.ts     # Theme state
+│
+└── public/                # Static assets
+    └── icons/
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Authentication
+- JWT-based authentication
+- Persistent sessions (localStorage)
+- Protected routes
 
-## Deploy on Vercel
+### Posts
+- Create posts (text, link, image, poll)
+- Edit/delete own posts
+- Ephemeral posts (auto-delete)
+- Save/unsave posts
+- Seen posts tracking (Bloom filter)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Comments
+- Nested comments (up to 10 levels)
+- Real-time updates (WebSocket)
+- Edit/delete own comments
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Reactions
+- Like/dislike posts and comments
+- Multiple reaction types
+
+### User Features
+- Profile editing
+- Avatar upload
+- Bio
+- Password change
+- Online status indicator
+
+### Lenses
+- Custom feed filters
+- Filter by post type, tags, reactions
+- Public/private lenses
+
+### Theme
+- Dark/Light mode
+- System preference detection
+- Persistent theme choice
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm start` | Start production server |
+| `npm run lint` | Run ESLint |
+
+## Styling
+
+Uses Tailwind CSS with custom CSS variables for theming.
+
+Theme variables are defined in `app/globals.css`:
+- `--bg-canvas`, `--bg-card` - Background colors
+- `--text-primary`, `--text-secondary` - Text colors
+- `--accent-primary` - Brand color
+- `--success`, `--error`, `--warning` - Semantic colors
+
+## State Management
+
+### Auth Store (Zustand)
+```typescript
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  setSession: (token: string, user: User) => void;
+  logout: () => void;
+}
+```
+
+### Theme Store (Zustand)
+```typescript
+interface ThemeState {
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
+}
+```
+
+## GraphQL
+
+Apollo Client configured with:
+- HTTP link for queries/mutations
+- WebSocket link for subscriptions
+- Auth header injection
+- Error handling
+
+## Docker
+
+```bash
+docker build -t burrow-client .
+docker run -p 3000:3000 burrow-client
+```
+
+Or use docker-compose from root:
+```bash
+docker-compose up client
+```

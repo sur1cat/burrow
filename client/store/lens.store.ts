@@ -1,11 +1,8 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-/**
- * Frontend-owned Lens type
- * (independent of mocks and backend)
- */
 export interface Lens {
     id: string;
     name: string;
@@ -20,47 +17,30 @@ interface LensState {
 
     setActiveLens: (id: string | null) => void;
     addLens: (lens: Lens) => void;
+    removeLens: (id: string) => void;
 }
 
-export const useLensStore = create<LensState>((set) => ({
-    lenses: [],
-    activeLensId: null,
+export const useLensStore = create<LensState>()(
+    persist(
+        (set) => ({
+            lenses: [],
+            activeLensId: null,
 
-    setActiveLens: (id) => set({ activeLensId: id }),
+            setActiveLens: (id) => set({ activeLensId: id }),
 
-    addLens: (lens) =>
-        set((state) => ({
-            lenses: [...state.lenses, lens],
-        })),
-}));
+            addLens: (lens) =>
+                set((state) => ({
+                    lenses: [...state.lenses, lens],
+                })),
 
-
-
-
-
-
-//m
-// "use client";
-//
-// import { create } from "zustand";
-// import { Lens, mockLenses } from "@/graphql/mock/lenses";
-//
-// interface LensState {
-//     lenses: Lens[];
-//     activeLensId: string | null;
-//
-//     setActiveLens: (id: string | null) => void;
-//     addLens: (lens: Lens) => void;
-// }
-//
-// export const useLensStore = create<LensState>((set) => ({
-//     lenses: mockLenses,
-//     activeLensId: null,
-//
-//     setActiveLens: (id) => set({ activeLensId: id }),
-//
-//     addLens: (lens) =>
-//         set((state) => ({
-//             lenses: [...state.lenses, lens],
-//         })),
-// }));
+            removeLens: (id) =>
+                set((state) => ({
+                    lenses: state.lenses.filter((l) => l.id !== id),
+                    activeLensId: state.activeLensId === id ? null : state.activeLensId,
+                })),
+        }),
+        {
+            name: "lens-store",
+        }
+    )
+);

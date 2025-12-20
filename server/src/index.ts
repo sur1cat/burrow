@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
@@ -13,6 +14,7 @@ import { connectDatabase } from './config/database';
 import { typeDefs, resolvers, createContext } from './graphql';
 import { User } from './models';
 import { verifyToken, extractTokenFromHeader } from './utils/auth';
+import { usernameBloomFilter } from './utils/username-bloom-filter';
 
 async function startServer() {
   const app = express();
@@ -58,8 +60,10 @@ async function startServer() {
 
   const server = new ApolloServer({
     schema,
+    introspection: true,
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
+      ApolloServerPluginLandingPageLocalDefault({ embed: true }),
       {
         async serverWillStart() {
           return {
@@ -87,6 +91,7 @@ async function startServer() {
   });
 
   await connectDatabase();
+  await usernameBloomFilter.initialize();
   await server.start();
 
   app.use(

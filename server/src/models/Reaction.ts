@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Model, Types } from 'mongoose';
 
-export type ReactionType = 'like' | 'love' | 'laugh' | 'wow' | 'sad' | 'angry';
+export type ReactionType = 'like' | 'dislike' | 'love' | 'laugh' | 'wow' | 'sad' | 'angry';
 export type ReactionTarget = 'post' | 'comment';
 
 export interface IReaction extends Document {
@@ -40,7 +40,7 @@ const reactionSchema = new Schema<IReaction>(
     type: {
       type: String,
       required: true,
-      enum: ['like', 'love', 'laugh', 'wow', 'sad', 'angry'],
+      enum: ['like', 'dislike', 'love', 'laugh', 'wow', 'sad', 'angry'],
       default: 'like',
     },
   },

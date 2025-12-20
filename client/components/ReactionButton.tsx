@@ -1,31 +1,46 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@apollo/client/react";
+import { TOGGLE_REACTION } from "@/graphql/mutations/posts";
 
 export interface ReactionButtonProps {
+    postId: string;
     count: number;
     ariaLabel: string;
     initialActive?: boolean;
-    onClick?: () => void;
 }
 
 export default function ReactionButton({
-                                           count,
-                                           ariaLabel,
-                                           initialActive = false,
-                                           onClick,
-                                       }: ReactionButtonProps) {
+    postId,
+    count,
+    ariaLabel,
+    initialActive = false,
+}: ReactionButtonProps) {
     const [active, setActive] = useState(initialActive);
     const [localCount, setLocalCount] = useState(count);
 
-    const handleClick = () => {
-        setActive((prev) => {
-            const next = !prev;
-            setLocalCount((c) => (next ? c + 1 : Math.max(c - 1, 0)));
-            return next;
-        });
+    const [toggleReaction] = useMutation(TOGGLE_REACTION);
 
-        onClick?.();
+    const handleClick = async () => {
+        const wasActive = active;
+
+        setActive(!wasActive);
+        setLocalCount((c) => (!wasActive ? c + 1 : Math.max(c - 1, 0)));
+
+        try {
+            await toggleReaction({
+                variables: {
+                    targetType: "post",
+                    targetId: postId,
+                    type: "like",
+                },
+            });
+        } catch (error) {
+            setActive(wasActive);
+            setLocalCount((c) => (wasActive ? c + 1 : Math.max(c - 1, 0)));
+            console.error("Failed to toggle reaction:", error);
+        }
     };
 
     return (
@@ -41,64 +56,3 @@ export default function ReactionButton({
         </button>
     );
 }
-
-
-
-
-
-//m
-// "use client";
-//
-// import { useState } from "react";
-//
-// export interface ReactionButtonProps {
-//     count: number;
-//     ariaLabel: string;
-//     initialActive?: boolean;
-//     onClick?: () => void;
-// }
-//
-// export default function ReactionButton({
-//                                            count,
-//                                            ariaLabel,
-//                                            initialActive = false,
-//                                            onClick,
-//                                        }: ReactionButtonProps) {
-//     const [active, setActive] = useState(initialActive);
-//     const [localCount, setLocalCount] = useState(count);
-//
-//     const handleClick = () => {
-//         setActive((prevActive) => {
-//             const nextActive = !prevActive;
-//
-//             setLocalCount((prevCount) =>
-//                 nextActive ? prevCount + 1 : Math.max(prevCount - 1, 0)
-//             );
-//
-//             return nextActive;
-//         });
-//
-//         if (onClick) {
-//             onClick();
-//         }
-//     };
-//
-//     const baseClasses = "reaction";
-//     const activeClasses = active
-//         ? "bg-green-500 text-white"
-//         : "";
-//
-//     return (
-//         <button
-//             type="button"
-//             onClick={handleClick}
-//             aria-pressed={active}
-//             aria-label={ariaLabel}
-//             className={`${baseClasses} ${activeClasses}`}
-//         >
-//             <span>👍</span>
-//             <span>{localCount}</span>
-//         </button>
-//     );
-// }
-//

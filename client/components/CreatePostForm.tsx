@@ -3,29 +3,30 @@
 import { useMemo, useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_POST } from "@/graphql/mutations/posts";
-
-import PostTypeSelector from "@/components/post/PostTypeSelector";
 import PollEditor, { PollData } from "@/components/poll/PollEditor";
-
+import ImageUpload from "@/components/ImageUpload";
 import type { PostType } from "@/graphql/mock/posts";
 
 function hoursFromNow(h: number) {
     return new Date(Date.now() + h * 60 * 60 * 1000).toISOString();
 }
 
+const POST_TYPES = [
+    { id: "text", label: "Post", icon: "📝" },
+    { id: "image", label: "Image", icon: "🖼️" },
+    { id: "link", label: "Link", icon: "🔗" },
+    { id: "poll", label: "Poll", icon: "📊" },
+] as const;
+
 export default function CreatePostForm() {
     const [type, setType] = useState<PostType>("text");
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
-
     const [linkUrl, setLinkUrl] = useState("");
     const [imageUrl, setImageUrl] = useState("");
-
     const [poll, setPoll] = useState<PollData | null>(null);
-
     const [isEphemeral, setIsEphemeral] = useState(false);
-    const [ephemeralLifetime, setEphemeralLifetime] =
-        useState<"24h" | "7d">("24h");
+    const [ephemeralLifetime, setEphemeralLifetime] = useState<"24h" | "7d">("24h");
 
     const [createPost, { loading }] = useMutation(CREATE_POST, {
         refetchQueries: ["GetPosts"],
@@ -33,15 +34,13 @@ export default function CreatePostForm() {
 
     const ephemeralUntil = useMemo(() => {
         if (!isEphemeral) return null;
-        return ephemeralLifetime === "24h"
-            ? hoursFromNow(24)
-            : hoursFromNow(24 * 7);
+        return ephemeralLifetime === "24h" ? hoursFromNow(24) : hoursFromNow(24 * 7);
     }, [isEphemeral, ephemeralLifetime]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!title.trim() || !content.trim()) return;
+        if (!title.trim()) return;
         if (type === "link" && !linkUrl.trim()) return;
         if (type === "image" && !imageUrl.trim()) return;
 
@@ -56,16 +55,16 @@ export default function CreatePostForm() {
                 input: {
                     type,
                     title: title.trim(),
-                    content: content.trim(),
+                    content: content.trim() || title.trim(),
                     linkUrl: type === "link" ? linkUrl.trim() : null,
-                    imageUrl: type === "image" ? imageUrl.trim() : null,
+                    imageUrl: type === "image" ? imageUrl : null,
                     poll:
                         type === "poll" && poll
                             ? {
                                 question: poll.question.trim(),
                                 options: poll.options
-                                    .map((t) => t.trim())
-                                    .filter(Boolean),
+                                    .map((t) => ({ text: t.trim() }))
+                                    .filter((o) => o.text),
                             }
                             : null,
                     ephemeralUntil,
@@ -73,7 +72,6 @@ export default function CreatePostForm() {
             },
         });
 
-        // reset form
         setTitle("");
         setContent("");
         setLinkUrl("");
@@ -84,24 +82,44 @@ export default function CreatePostForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="card card-padding">
-            <div className="form-block">
-                <PostTypeSelector value={type} onChange={setType} />
+        <form onSubmit={handleSubmit} className="create-form">
+            <div className="create-form-tabs">
+                {POST_TYPES.map((pt) => (
+                    <button
+                        key={pt.id}
+                        type="button"
+                        onClick={() => setType(pt.id as PostType)}
+                        className={`create-tab ${type === pt.id ? "active" : ""}`}
+                    >
+                        <span>{pt.icon}</span>
+                        {pt.label}
+                    </button>
+                ))}
             </div>
 
-            <div className="post-body">
+            <div className="create-form-body">
                 <input
                     className="input"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Title"
+                    required
                 />
 
                 <textarea
                     className="input"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder="Write something..."
+                    placeholder={
+                        type === "text"
+                            ? "What's on your mind?"
+                            : type === "link"
+                            ? "Description (optional)"
+                            : type === "image"
+                            ? "Caption (optional)"
+                            : "Poll description"
+                    }
+                    rows={3}
                 />
 
                 {type === "link" && (
@@ -109,229 +127,49 @@ export default function CreatePostForm() {
                         className="input"
                         value={linkUrl}
                         onChange={(e) => setLinkUrl(e.target.value)}
-                        placeholder="Link URL (https://...)"
+                        placeholder="https://example.com"
+                        type="url"
                     />
                 )}
 
                 {type === "image" && (
-                    <input
-                        className="input"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="Image URL (https://...)"
+                    <ImageUpload
+                        onImageSelect={setImageUrl}
+                        currentImage={imageUrl}
                     />
                 )}
 
-                {type === "poll" && (
-                    <PollEditor
-                        onChange={(p) => setPoll(p)}
-                    />
-                )}
+                {type === "poll" && <PollEditor onChange={(p) => setPoll(p)} />}
             </div>
 
-            <div className="ephemeral-row">
-                <label className="ephemeral-label">
+            <div className="create-form-footer">
+                <label className="ephemeral-toggle">
                     <input
                         type="checkbox"
                         checked={isEphemeral}
                         onChange={(e) => setIsEphemeral(e.target.checked)}
                     />
-                    <span>Ephemeral thread</span>
+                    <span>Ephemeral</span>
+                    {isEphemeral && (
+                        <select
+                            className="ephemeral-select"
+                            value={ephemeralLifetime}
+                            onChange={(e) => setEphemeralLifetime(e.target.value as "24h" | "7d")}
+                        >
+                            <option value="24h">24h</option>
+                            <option value="7d">7d</option>
+                        </select>
+                    )}
                 </label>
 
-                {isEphemeral && (
-                    <select
-                        className="input ephemeral-select"
-                        value={ephemeralLifetime}
-                        onChange={(e) =>
-                            setEphemeralLifetime(
-                                e.target.value as "24h" | "7d"
-                            )
-                        }
-                    >
-                        <option value="24h">24 hours</option>
-                        <option value="7d">7 days</option>
-                    </select>
-                )}
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading || !title.trim()}
+                >
+                    {loading ? "Posting..." : "Post"}
+                </button>
             </div>
-
-            <button
-                type="submit"
-                className="btn btn-primary w-full"
-                disabled={loading}
-            >
-                {loading ? "Posting…" : "Post"}
-            </button>
         </form>
     );
 }
-
-
-
-
-
-
-
-//m
-// "use client";
-//
-// import { useMemo, useState } from "react";
-// import { mockPosts, PostType, PollData } from "@/graphql/mock/posts";
-// import PostTypeSelector from "@/components/post/PostTypeSelector";
-// import PollEditor from "@/components/poll/PollEditor";
-//
-// function hoursFromNow(h: number) {
-//     return new Date(Date.now() + h * 60 * 60 * 1000).toISOString();
-// }
-//
-// export default function CreatePostForm() {
-//     const [type, setType] = useState<PostType>("text");
-//     const [title, setTitle] = useState("");
-//     const [content, setContent] = useState("");
-//
-//     const [linkUrl, setLinkUrl] = useState("");
-//     const [imageUrl, setImageUrl] = useState("");
-//
-//     const [poll, setPoll] = useState<PollData | null>(null);
-//
-//     const [isEphemeral, setIsEphemeral] = useState(false);
-//     const [ephemeralLifetime, setEphemeralLifetime] = useState<"24h" | "7d">("24h");
-//
-//     const ephemeralUntil = useMemo(() => {
-//         if (!isEphemeral) return null;
-//         return ephemeralLifetime === "24h" ? hoursFromNow(24) : hoursFromNow(24 * 7);
-//     }, [isEphemeral, ephemeralLifetime]);
-//
-//     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-//         e.preventDefault();
-//
-//         if (!title.trim()) return;
-//         if (!content.trim()) return;
-//
-//         // valideer met type
-//         if (type === "link" && !linkUrl.trim()) return;
-//         if (type === "image" && !imageUrl.trim()) return;
-//         if (type === "poll") {
-//             if (!poll?.question.trim()) return;
-//             const validOpts = (poll.options ?? []).map((o) => o.trim()).filter(Boolean);
-//             if (validOpts.length < 2) return;
-//         }
-//
-//         const newPostId = Math.random().toString(16).slice(2);
-//
-//         mockPosts.unshift({
-//             id: newPostId,
-//             type,
-//             title: title.trim(),
-//             content: content.trim(),
-//             createdAt: new Date().toISOString(),
-//             author: {
-//                 id: "you",
-//                 username: "You",
-//             },
-//             reactionsCount: 0,
-//             commentsCount: 0,
-//             ephemeralUntil,
-//             linkUrl: type === "link" ? linkUrl.trim() : null,
-//             imageUrl: type === "image" ? imageUrl.trim() : null,
-//             poll:
-//                 type === "poll" && poll
-//                     ? {
-//                         question: poll.question.trim(),
-//                         options: poll.options
-//                             .map((t, idx) => ({ id: String(idx + 1), text: t.trim(), votes: 0 }))
-//                             .filter((o) => o.text),
-//                     }
-//                     : null,
-//             tags: [],
-//         });
-//
-//         // Reset
-//         setTitle("");
-//         setContent("");
-//         setLinkUrl("");
-//         setImageUrl("");
-//         setPoll(null);
-//         setIsEphemeral(false);
-//         setEphemeralLifetime("24h");
-//
-//         alert("Post created (mock)");
-//     };
-//
-//     return (
-//         <form onSubmit={handleSubmit} className="card card-padding">
-//             <div className="form-block">
-//                 <PostTypeSelector value={type} onChange={setType} />
-//             </div>
-//             <div className="post-body">
-//                 <input
-//                     className="input"
-//                     value={title}
-//                     onChange={(e) => setTitle(e.target.value)}
-//                     placeholder="Title"
-//                 />
-//
-//                 <textarea
-//                     className="input"
-//                     value={content}
-//                     onChange={(e) => setContent(e.target.value)}
-//                     placeholder="Write something..."
-//                 />
-//
-//
-//
-//             {type === "link" && (
-//                 <input
-//                     className="input"
-//                     value={linkUrl}
-//                     onChange={(e) => setLinkUrl(e.target.value)}
-//                     placeholder="Link URL (https://...)"
-//                 />
-//             )}
-//
-//             {type === "image" && (
-//                 <input
-//                     className="input"
-//                     value={imageUrl}
-//                     onChange={(e) => setImageUrl(e.target.value)}
-//                     placeholder="Image URL (https://...)"
-//                 />
-//             )}
-//
-//             {type === "poll" && (
-//                 <PollEditor
-//                     onChange={(p) => setPoll(p)}
-//                 />
-//             )}
-//             </div>
-//             <div className="ephemeral-row">
-//                 <label className="ephemeral-label">
-//                     <input
-//                         type="checkbox"
-//                         checked={isEphemeral}
-//                         onChange={(e) => setIsEphemeral(e.target.checked)}
-//                     />
-//                     <span>Ephemeral thread</span>
-//                 </label>
-//
-//                 {isEphemeral && (
-//                     <select
-//                         className="input ephemeral-select"
-//                         value={ephemeralLifetime}
-//                         onChange={(e) => setEphemeralLifetime(e.target.value as "24h" | "7d")}
-//                     >
-//                         <option value="24h">24 hours</option>
-//                         <option value="7d">7 days</option>
-//                     </select>
-//                 )}
-//             </div>
-//
-//             <button type="submit" className="btn btn-primary w-full">
-//                 Post
-//             </button>
-//         </form>
-//     );
-// }
-//
-//
-//

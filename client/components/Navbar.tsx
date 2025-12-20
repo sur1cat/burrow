@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
     const user = useAuthStore((s) => s.user);
@@ -9,114 +10,45 @@ export default function Navbar() {
 
     return (
         <nav className="navbar">
-            <div className="flex gap-4">
-                <Link href="/feed" className="navbar-link">
-                    Feed
-                </Link>
+            <Link href="/feed" className="navbar-brand">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="8" cy="10" r="1.5" fill="white" />
+                    <circle cx="16" cy="10" r="1.5" fill="white" />
+                    <path d="M8 15 Q12 18 16 15" stroke="white" strokeWidth="1.5" fill="none" />
+                </svg>
+                burrow
+            </Link>
 
-                {user && (
-                    <Link href="/profile" className="navbar-link">
-                        Profile
-                    </Link>
-                )}
-            </div>
+            <div className="navbar-nav">
+                <ThemeToggle />
 
-            <div>
                 {user ? (
-                    <button onClick={logout} className="navbar-link">
-                        Logout
-                    </button>
+                    <>
+                        <Link href="/feed" className="navbar-link">
+                            Home
+                        </Link>
+                        <Link href="/saved" className="navbar-link">
+                            Saved
+                        </Link>
+                        <Link href="/profile" className="navbar-link">
+                            u/{user.username}
+                        </Link>
+                        <button onClick={logout} className="navbar-btn navbar-btn-outline">
+                            Log Out
+                        </button>
+                    </>
                 ) : (
-                    <Link href="/login" className="navbar-link">
-                        Login
-                    </Link>
+                    <>
+                        <Link href="/login" className="navbar-btn navbar-btn-outline">
+                            Log In
+                        </Link>
+                        <Link href="/register" className="navbar-btn navbar-btn-primary">
+                            Sign Up
+                        </Link>
+                    </>
                 )}
             </div>
         </nav>
     );
 }
-
-
-
-// "use client";
-//
-// import Link from "next/link";
-// import { useAuthStore } from "@/store/auth.store";
-//
-// export default function Navbar() {
-//     const user = useAuthStore((s) => s.user);
-//     const logout = useAuthStore((s) => s.logout);
-//
-//     return (
-//         <nav className="w-full bg-gray-900 text-white px-6 py-3 flex justify-between">
-//             <div className="flex gap-4">
-//                 <Link href="/feed" className="hover:underline">
-//                     Feed
-//                 </Link>
-//
-//                 {user && (
-//                     <Link href="/profile" className="hover:underline">
-//                         Profile
-//                     </Link>
-//                 )}
-//             </div>
-//
-//             <div>
-//                 {user ? (
-//                     <button onClick={logout} className="hover:underline">
-//                         Logout
-//                     </button>
-//                 ) : (
-//                     <Link href="/login" className="hover:underline">
-//                         Login
-//                     </Link>
-//                 )}
-//             </div>
-//         </nav>
-//     );
-// }
-
-
-
-
-
-
-
-//without mock data
-// "use client";
-//
-// import Link from "next/link";
-// import { useAuthStore } from "@/store/auth.store";
-//
-// export default function Navbar() {
-//     const { user, logout } = useAuthStore();
-//
-//     return (
-//         <nav className="bg-gray-800 text-white p-4 flex justify-between">
-//             <div>
-//                 <Link href="/feed" className="font-bold text-lg">
-//                     MERN Social
-//                 </Link>
-//             </div>
-//             <div className="space-x-4">
-//                 {user ? (
-//                     <>
-//                         <span>{user.username || user.email}</span>
-//                         <button onClick={logout} className="bg-red-500 px-2 py-1 rounded">
-//                             Logout
-//                         </button>
-//                     </>
-//                 ) : (
-//                     <>
-//                         <Link href="/login" className="hover:underline">
-//                             Login
-//                         </Link>
-//                         <Link href="/register" className="hover:underline">
-//                             Register
-//                         </Link>
-//                     </>
-//                 )}
-//             </div>
-//         </nav>
-//     );
-// }

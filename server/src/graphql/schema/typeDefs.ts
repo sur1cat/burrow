@@ -12,6 +12,7 @@ export const typeDefs = gql`
 
   enum ReactionType {
     like
+    dislike
     love
     laugh
     wow
@@ -47,7 +48,10 @@ export const typeDefs = gql`
     role: UserRole!
     createdAt: DateTime!
     updatedAt: DateTime!
+    lastSeen: DateTime
+    isOnline: Boolean!
     posts: [Post!]
+    savedPosts: [Post!]
     postsCount: Int!
     commentsCount: Int!
   }
@@ -143,6 +147,11 @@ export const typeDefs = gql`
     message: String!
   }
 
+  type UsernameAvailability {
+    available: Boolean!
+    reason: String
+  }
+
   input RegisterInput {
     username: String!
     email: String!
@@ -158,6 +167,11 @@ export const typeDefs = gql`
     username: String
     bio: String
     avatar: String
+  }
+
+  input ChangePasswordInput {
+    currentPassword: String!
+    newPassword: String!
   }
 
   input PollOptionInput {
@@ -221,7 +235,9 @@ export const typeDefs = gql`
   type Query {
     me: User
     user(id: ID!): User
+    userByUsername(username: String!): User
     users(limit: Int, offset: Int): [User!]!
+    checkUsernameAvailable(username: String!): UsernameAvailability!
 
     posts(limit: Int, offset: Int, filter: PostFilterInput): PaginatedPosts!
     post(id: ID!): Post
@@ -239,6 +255,7 @@ export const typeDefs = gql`
     register(input: RegisterInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
     updateProfile(input: UpdateProfileInput!): User!
+    changePassword(input: ChangePasswordInput!): Boolean!
     deleteAccount: DeleteResult!
     createPost(input: CreatePostInput!): Post!
     updatePost(id: ID!, input: UpdatePostInput!): Post!
@@ -251,6 +268,9 @@ export const typeDefs = gql`
     updateLens(id: ID!, input: UpdateLensInput!): Lens!
     deleteLens(id: ID!): DeleteResult!
     toggleReaction(targetType: ReactionTarget!, targetId: ID!, type: ReactionType!): Boolean!
+    savePost(postId: ID!): Boolean!
+    unsavePost(postId: ID!): Boolean!
+    heartbeat: Boolean!
   }
 
   type Subscription {
