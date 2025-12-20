@@ -10,48 +10,71 @@ export enum ErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR',
 }
 
-export class AppError extends GraphQLError {
+export function createAppError(
+  message: string,
+  code: ErrorCode,
+  extensions?: Record<string, unknown>
+): GraphQLError {
+  return new GraphQLError(message, {
+    extensions: {
+      code,
+      ...extensions,
+    },
+  });
+}
+
+export class AppError extends Error {
+  code: ErrorCode;
+  extensions?: Record<string, unknown>;
+
   constructor(
     message: string,
     code: ErrorCode,
     extensions?: Record<string, unknown>
   ) {
-    super(message, {
-      extensions: {
-        code,
-        ...extensions,
-      },
-    });
+    super(message);
+    this.code = code;
+    this.extensions = extensions;
+    this.name = 'AppError';
+  }
+
+  toGraphQLError(): GraphQLError {
+    return createAppError(this.message, this.code, this.extensions);
   }
 }
 
 export class AuthenticationError extends AppError {
   constructor(message = 'You must be logged in to perform this action') {
     super(message, ErrorCode.UNAUTHENTICATED);
+    this.name = 'AuthenticationError';
   }
 }
 
 export class ForbiddenError extends AppError {
   constructor(message = 'You do not have permission to perform this action') {
     super(message, ErrorCode.FORBIDDEN);
+    this.name = 'ForbiddenError';
   }
 }
 
 export class NotFoundError extends AppError {
   constructor(resource = 'Resource') {
     super(`${resource} not found`, ErrorCode.NOT_FOUND);
+    this.name = 'NotFoundError';
   }
 }
 
 export class ValidationError extends AppError {
   constructor(message: string, field?: string) {
     super(message, ErrorCode.VALIDATION_ERROR, field ? { field } : undefined);
+    this.name = 'ValidationError';
   }
 }
 
 export class ConflictError extends AppError {
   constructor(message: string) {
     super(message, ErrorCode.CONFLICT);
+    this.name = 'ConflictError';
   }
 }
 

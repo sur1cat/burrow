@@ -111,9 +111,9 @@ export const reactionResolvers = {
     postUpdated: {
       subscribe: (_: unknown, { postId }: { postId?: string }) => {
         if (postId) {
-          return pubsub.asyncIterableIterator(`${POST_UPDATED}.${postId}`);
+          return pubsub.asyncIterator(`${POST_UPDATED}.${postId}`);
         }
-        return pubsub.asyncIterableIterator(POST_UPDATED);
+        return pubsub.asyncIterator(POST_UPDATED);
       },
     },
 
@@ -122,7 +122,7 @@ export const reactionResolvers = {
         _: unknown,
         { targetType, targetId }: { targetType: ReactionTarget; targetId: string }
       ) => {
-        return pubsub.asyncIterableIterator(
+        return pubsub.asyncIterator(
           `${REACTION_TOGGLED}.${targetType}.${targetId}`
         );
       },

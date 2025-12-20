@@ -3,7 +3,7 @@ import { ForbiddenError, NotFoundError } from '../../utils/errors';
 import { validate, createLensSchema, updateLensSchema } from '../../utils/validators';
 import { Context, requireAuth } from '../context';
 
-interface CreateLensInput {
+export interface CreateLensInput {
   name: string;
   description?: string;
   rules: { type: string; value: string }[];
@@ -11,7 +11,7 @@ interface CreateLensInput {
   pinned?: boolean;
 }
 
-interface UpdateLensInput {
+export interface UpdateLensInput {
   name?: string;
   description?: string;
   rules?: { type: string; value: string }[];

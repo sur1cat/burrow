@@ -147,7 +147,7 @@ export const commentResolvers = {
   Subscription: {
     commentAdded: {
       subscribe: (_: unknown, { postId }: { postId: string }) => {
-        return pubsub.asyncIterableIterator(`${COMMENT_ADDED}.${postId}`);
+        return pubsub.asyncIterator(`${COMMENT_ADDED}.${postId}`);
       },
     },
   },

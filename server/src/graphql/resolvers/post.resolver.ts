@@ -5,7 +5,7 @@ import { validate, createPostSchema, updatePostSchema } from '../../utils/valida
 import { Context, requireAuth } from '../context';
 import { pubsub, POST_UPDATED } from './subscriptions';
 
-interface CreatePostInput {
+export interface CreatePostInput {
   type: 'text' | 'link' | 'image' | 'poll';
   title: string;
   content: string;
@@ -20,7 +20,7 @@ interface CreatePostInput {
   ephemeralUntil?: string | null;
 }
 
-interface UpdatePostInput {
+export interface UpdatePostInput {
   title?: string;
   content?: string;
   linkUrl?: string | null;
@@ -28,7 +28,7 @@ interface UpdatePostInput {
   tags?: string[];
 }
 
-interface PostFilterInput {
+export interface PostFilterInput {
   type?: string;
   authorId?: string;
   tags?: string[];

@@ -3,7 +3,7 @@ import { AuthenticationError, ForbiddenError } from '../../utils/errors';
 import { validate, updateProfileSchema } from '../../utils/validators';
 import { Context, requireAuth } from '../context';
 
-interface UpdateProfileInput {
+export interface UpdateProfileInput {
   username?: string;
   bio?: string;
   avatar?: string;
@@ -51,7 +51,7 @@ export const userResolvers = {
   },
 
   User: {
-    id: (parent: IUser) => parent._id.toString(),
+    id: (parent: IUser & { id?: string }) => parent._id?.toString() ?? parent.id,
 
     posts: async (parent: IUser) => {
       return Post.find({ author: parent._id, isDeleted: false })

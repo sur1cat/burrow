@@ -4,13 +4,13 @@ import { AuthenticationError, ConflictError, NotFoundError } from '../../utils/e
 import { validate, registerSchema, loginSchema } from '../../utils/validators';
 import { Context } from '../context';
 
-interface RegisterInput {
+export interface RegisterInput {
   username: string;
   email: string;
   password: string;
 }
 
-interface LoginInput {
+export interface LoginInput {
   email: string;
   password: string;
 }

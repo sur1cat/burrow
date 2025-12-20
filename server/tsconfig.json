@@ -14,14 +14,14 @@
     "declarationMap": true,
     "sourceMap": true,
     "moduleResolution": "node",
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@config/*": ["config/*"],
-      "@models/*": ["models/*"],
-      "@graphql/*": ["graphql/*"],
-      "@middleware/*": ["middleware/*"],
-      "@utils/*": ["utils/*"]
+      "@/*": ["src/*"],
+      "@config/*": ["src/config/*"],
+      "@models/*": ["src/models/*"],
+      "@graphql/*": ["src/graphql/*"],
+      "@middleware/*": ["src/middleware/*"],
+      "@utils/*": ["src/utils/*"]
     },
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },

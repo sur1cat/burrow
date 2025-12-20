@@ -1,28 +1,16 @@
 "use client";
 
-import {
-    DocumentNode,
-    OperationVariables,
-} from "@apollo/client";
+import { DocumentNode } from "@apollo/client";
+import { useSubscription as apolloUseSubscription } from "@apollo/client/react";
 
-import {
-    useSubscription as apolloUseSubscription,
-    SubscriptionOptions,
-} from "@apollo/client/react/hooks/useSubscription";
-//dk
-
-
-export function useSubscription<
-    TData = unknown,
-    TVariables = OperationVariables
->(
+export function useSubscription<TData = unknown>(
     query: DocumentNode,
-    options?: SubscriptionOptions<TVariables>
+    options?: { variables?: Record<string, unknown>; skip?: boolean }
 ) {
-    const { data, loading, error } = apolloUseSubscription<
-        TData,
-        TVariables
-    >(query, options);
+    const { data, loading, error } = apolloUseSubscription<TData>(
+        query,
+        options as Parameters<typeof apolloUseSubscription<TData>>[1]
+    );
 
     return { data, loading, error };
 }

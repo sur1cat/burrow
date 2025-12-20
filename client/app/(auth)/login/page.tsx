@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { useRouter } from "next/navigation";
-import { LOGIN } from "@/graphql/mutations/auth";
+import { LOGIN_MUTATION } from "@/graphql/mutations/auth";
 import { useAuthStore } from "@/store/auth.store";
 
 //m
@@ -33,11 +33,11 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    //m    const [login, { loading, error }] = useMutation(LOGIN);
+    //m    const [login, { loading, error }] = useMutation(LOGIN_MUTATION);
     const [login, { loading, error }] = useMutation<
         LoginResponse,
         LoginVariables
-    >(LOGIN);
+    >(LOGIN_MUTATION);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

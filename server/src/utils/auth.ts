@@ -21,8 +21,8 @@ export function generateToken(user: IUser): string {
   };
 
   return jwt.sign(payload, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
-  });
+    expiresIn: config.jwtExpiresIn as string,
+  } as jwt.SignOptions);
 }
 
 export function verifyToken(token: string): JwtPayload | null {

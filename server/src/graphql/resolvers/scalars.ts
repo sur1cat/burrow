@@ -1,4 +1,4 @@
-import { GraphQLScalarType, Kind } from 'graphql';
+import { GraphQLScalarType, Kind, ValueNode } from 'graphql';
 
 export const DateTimeScalar = new GraphQLScalarType({
   name: 'DateTime',
@@ -28,7 +28,7 @@ export const DateTimeScalar = new GraphQLScalarType({
     throw new Error('DateTime scalar parser expected a string or number');
   },
 
-  parseLiteral(ast): Date {
+  parseLiteral(ast: ValueNode): Date {
     if (ast.kind === Kind.STRING) {
       const date = new Date(ast.value);
       if (isNaN(date.getTime())) {
