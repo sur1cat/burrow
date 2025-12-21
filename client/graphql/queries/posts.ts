@@ -14,6 +14,7 @@ export const GET_POSTS = gql`
         commentsCount
         linkUrl
         imageUrl
+        isSaved
         poll {
           question
           options {
@@ -48,6 +49,7 @@ export const GET_POST = gql`
       commentsCount
       linkUrl
       imageUrl
+      isSaved
       poll {
         question
         options {

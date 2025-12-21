@@ -86,3 +86,24 @@ export const HEARTBEAT = gql`
     heartbeat
   }
 `;
+
+export const DELETE_POST = gql`
+  mutation DeletePost($id: ID!) {
+    deletePost(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
+export const UPDATE_POST = gql`
+  mutation UpdatePost($id: ID!, $input: UpdatePostInput!) {
+    updatePost(id: $id, input: $input) {
+      id
+      title
+      content
+      linkUrl
+      imageUrl
+    }
+  }
+`;

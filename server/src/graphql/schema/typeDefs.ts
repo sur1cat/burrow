@@ -93,6 +93,7 @@ export const typeDefs = gql`
     hasReacted: Boolean
     userReactionType: ReactionType
     comments: [Comment!]
+    isSaved: Boolean!
   }
 
   type Comment {

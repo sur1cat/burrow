@@ -25,6 +25,7 @@ function mapPostToPostCard(post: any): PostCardPost {
         linkUrl: post.linkUrl,
         imageUrl: post.imageUrl,
         poll: post.poll,
+        isSaved: true,
     };
 }
 

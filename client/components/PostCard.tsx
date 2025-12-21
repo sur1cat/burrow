@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@apollo/client/react";
-import { VOTE_POLL, TOGGLE_REACTION, SAVE_POST, UNSAVE_POST } from "@/graphql/mutations/posts";
+import { VOTE_POLL, TOGGLE_REACTION, SAVE_POST, UNSAVE_POST, DELETE_POST } from "@/graphql/mutations/posts";
+import { GET_POSTS } from "@/graphql/queries/posts";
+import { GET_ME } from "@/graphql/queries/users";
 import { getSeenPostsFilter } from "@/lib/bloom-filter";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useAuthStore } from "@/store/auth.store";
 
 export interface PollOption {
     id: string;
@@ -35,6 +40,7 @@ export interface PostCardPost {
     linkUrl?: string;
     imageUrl?: string;
     poll?: Poll;
+    isSaved?: boolean;
 }
 
 function formatTimeAgo(dateStr: string) {
@@ -58,7 +64,7 @@ function formatTimeLeft(ms: number) {
     return `${days}d`;
 }
 
-function PollRenderer({ postId, poll }: { postId: string; poll: Poll }) {
+function PollRenderer({ postId, poll, requireAuth }: { postId: string; poll: Poll; requireAuth: (cb: () => void) => void }) {
     const [votePoll, { loading }] = useMutation(VOTE_POLL);
     const [localOptions, setLocalOptions] = useState(poll.options);
     const [votedId, setVotedId] = useState<string | null>(
@@ -70,25 +76,27 @@ function PollRenderer({ postId, poll }: { postId: string; poll: Poll }) {
         [localOptions]
     );
 
-    const handleVote = async (optionId: string) => {
+    const handleVote = (optionId: string) => {
         if (votedId || loading) return;
 
-        setVotedId(optionId);
-        setLocalOptions(prev =>
-            prev.map(o =>
-                o.id === optionId ? { ...o, votes: o.votes + 1, hasVoted: true } : o
-            )
-        );
+        requireAuth(async () => {
+            setVotedId(optionId);
+            setLocalOptions(prev =>
+                prev.map(o =>
+                    o.id === optionId ? { ...o, votes: o.votes + 1, hasVoted: true } : o
+                )
+            );
 
-        try {
-            await votePoll({
-                variables: { postId, optionId },
-            });
-        } catch (error) {
-            setVotedId(null);
-            setLocalOptions(poll.options);
-            console.error("Failed to vote:", error);
-        }
+            try {
+                await votePoll({
+                    variables: { postId, optionId },
+                });
+            } catch (error) {
+                setVotedId(null);
+                setLocalOptions(poll.options);
+                console.error("Failed to vote:", error);
+            }
+        });
     };
 
     return (
@@ -128,15 +136,34 @@ function PollRenderer({ postId, poll }: { postId: string; poll: Poll }) {
     );
 }
 
-export default function PostCard({ post }: { post: PostCardPost }) {
+export default function PostCard({ post, onDelete }: { post: PostCardPost; onDelete?: (postId: string) => void }) {
+    const router = useRouter();
+    const user = useAuthStore((s) => s.user);
     const [votes, setVotes] = useState(post.reactionsCount ?? 0);
     const [voteState, setVoteState] = useState<"up" | "down" | null>(null);
-    const [isSaved, setIsSaved] = useState(false);
+    const [isSaved, setIsSaved] = useState(post.isSaved ?? false);
     const [showShareToast, setShowShareToast] = useState(false);
     const [isSeen, setIsSeen] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    const [isDeleted, setIsDeleted] = useState(false);
     const [toggleReaction] = useMutation(TOGGLE_REACTION);
-    const [savePostMutation] = useMutation(SAVE_POST);
-    const [unsavePostMutation] = useMutation(UNSAVE_POST);
+    const [savePostMutation] = useMutation(SAVE_POST, {
+        refetchQueries: [
+            { query: GET_POSTS, variables: { limit: 20, offset: 0 } },
+            { query: GET_ME },
+        ],
+    });
+    const [unsavePostMutation] = useMutation(UNSAVE_POST, {
+        refetchQueries: [
+            { query: GET_POSTS, variables: { limit: 20, offset: 0 } },
+            { query: GET_ME },
+        ],
+    });
+    const [deletePostMutation] = useMutation(DELETE_POST);
+    const { requireAuth } = useRequireAuth();
+
+    const isOwner = user?.id === post.author.id;
 
     useEffect(() => {
         const bloomFilter = getSeenPostsFilter();
@@ -153,48 +180,52 @@ export default function PostCard({ post }: { post: PostCardPost }) {
         }
     };
 
-    const handleUpvote = async () => {
-        const wasUpvoted = voteState === "up";
-        const newState = wasUpvoted ? null : "up";
-        const voteChange = wasUpvoted ? -1 : (voteState === "down" ? 2 : 1);
+    const handleUpvote = () => {
+        requireAuth(async () => {
+            const wasUpvoted = voteState === "up";
+            const newState = wasUpvoted ? null : "up";
+            const voteChange = wasUpvoted ? -1 : (voteState === "down" ? 2 : 1);
 
-        setVoteState(newState);
-        setVotes(prev => prev + voteChange);
+            setVoteState(newState);
+            setVotes(prev => prev + voteChange);
 
-        try {
-            await toggleReaction({
-                variables: {
-                    targetType: "post",
-                    targetId: post.id,
-                    type: "like"
-                }
-            });
-        } catch {
-            setVoteState(voteState);
-            setVotes(post.reactionsCount ?? 0);
-        }
+            try {
+                await toggleReaction({
+                    variables: {
+                        targetType: "post",
+                        targetId: post.id,
+                        type: "like"
+                    }
+                });
+            } catch {
+                setVoteState(voteState);
+                setVotes(post.reactionsCount ?? 0);
+            }
+        });
     };
 
-    const handleDownvote = async () => {
-        const wasDownvoted = voteState === "down";
-        const newState = wasDownvoted ? null : "down";
-        const voteChange = wasDownvoted ? 1 : (voteState === "up" ? -2 : -1);
+    const handleDownvote = () => {
+        requireAuth(async () => {
+            const wasDownvoted = voteState === "down";
+            const newState = wasDownvoted ? null : "down";
+            const voteChange = wasDownvoted ? 1 : (voteState === "up" ? -2 : -1);
 
-        setVoteState(newState);
-        setVotes(prev => prev + voteChange);
+            setVoteState(newState);
+            setVotes(prev => prev + voteChange);
 
-        try {
-            await toggleReaction({
-                variables: {
-                    targetType: "post",
-                    targetId: post.id,
-                    type: "dislike"
-                }
-            });
-        } catch {
-            setVoteState(voteState);
-            setVotes(post.reactionsCount ?? 0);
-        }
+            try {
+                await toggleReaction({
+                    variables: {
+                        targetType: "post",
+                        targetId: post.id,
+                        type: "dislike"
+                    }
+                });
+            } catch {
+                setVoteState(voteState);
+                setVotes(post.reactionsCount ?? 0);
+            }
+        });
     };
 
     const handleShare = async () => {
@@ -216,19 +247,36 @@ export default function PostCard({ post }: { post: PostCardPost }) {
         }
     };
 
-    const handleSave = async () => {
-        const wasSaved = isSaved;
-        setIsSaved(!wasSaved);
+    const handleSave = () => {
+        requireAuth(async () => {
+            const wasSaved = isSaved;
+            setIsSaved(!wasSaved);
 
-        try {
-            if (wasSaved) {
-                await unsavePostMutation({ variables: { postId: post.id } });
-            } else {
-                await savePostMutation({ variables: { postId: post.id } });
+            try {
+                if (wasSaved) {
+                    await unsavePostMutation({ variables: { postId: post.id } });
+                } else {
+                    await savePostMutation({ variables: { postId: post.id } });
+                }
+            } catch {
+                setIsSaved(wasSaved);
             }
-        } catch {
-            setIsSaved(wasSaved);
+        });
+    };
+
+    const handleDelete = async () => {
+        try {
+            await deletePostMutation({ variables: { id: post.id } });
+            setIsDeleted(true);
+            setShowDeleteConfirm(false);
+            onDelete?.(post.id);
+        } catch (error) {
+            console.error("Failed to delete post:", error);
         }
+    };
+
+    const handleEdit = () => {
+        router.push(`/edit/${post.id}`);
     };
 
     const { isEphemeral, badgeText } = useMemo(() => {
@@ -246,6 +294,10 @@ export default function PostCard({ post }: { post: PostCardPost }) {
 
         return { isEphemeral: true, badgeText: `${formatTimeLeft(diff)}` };
     }, [post.ephemeralUntil]);
+
+    if (isDeleted) {
+        return null;
+    }
 
     return (
         <article className={`post-card ${isSeen ? "post-seen" : ""}`}>
@@ -292,6 +344,39 @@ export default function PostCard({ post }: { post: PostCardPost }) {
                             <span className="post-flair flair-poll">Poll</span>
                         </>
                     )}
+                    {isOwner && (
+                        <div className="post-menu-container">
+                            <button
+                                className="post-menu-btn"
+                                onClick={() => setShowMenu(!showMenu)}
+                                aria-label="Post options"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="2" />
+                                    <circle cx="12" cy="12" r="2" />
+                                    <circle cx="12" cy="19" r="2" />
+                                </svg>
+                            </button>
+                            {showMenu && (
+                                <div className="post-menu-dropdown">
+                                    <button onClick={() => { handleEdit(); setShowMenu(false); }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                        Edit
+                                    </button>
+                                    <button onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }} className="danger">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <polyline points="3 6 5 6 21 6" />
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <h3 className="post-title">
@@ -323,7 +408,7 @@ export default function PostCard({ post }: { post: PostCardPost }) {
                 )}
 
                 {post.type === "poll" && post.poll && (
-                    <PollRenderer postId={post.id} poll={post.poll} />
+                    <PollRenderer postId={post.id} poll={post.poll} requireAuth={requireAuth} />
                 )}
 
                 <div className="post-actions">
@@ -365,6 +450,23 @@ export default function PostCard({ post }: { post: PostCardPost }) {
             {showShareToast && (
                 <div className="toast toast-success">
                     Link copied to clipboard!
+                </div>
+            )}
+
+            {showDeleteConfirm && (
+                <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h3>Delete Post</h3>
+                        <p>Are you sure you want to delete this post? This action cannot be undone.</p>
+                        <div className="modal-actions">
+                            <button className="btn btn-outline" onClick={() => setShowDeleteConfirm(false)}>
+                                Cancel
+                            </button>
+                            <button className="btn btn-danger" onClick={handleDelete}>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </article>

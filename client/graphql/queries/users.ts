@@ -23,6 +23,7 @@ export const GET_ME = gql`
                 linkUrl
                 imageUrl
                 ephemeralUntil
+                isSaved
                 poll {
                     question
                     options {
@@ -45,6 +46,7 @@ export const GET_ME = gql`
                 linkUrl
                 imageUrl
                 ephemeralUntil
+                isSaved
                 author {
                     id
                     username
@@ -87,6 +89,7 @@ export const GET_USER = gql`
                 linkUrl
                 imageUrl
                 ephemeralUntil
+                isSaved
                 poll {
                     question
                     options {
@@ -125,6 +128,7 @@ export const GET_USER_BY_USERNAME = gql`
                 linkUrl
                 imageUrl
                 ephemeralUntil
+                isSaved
                 author {
                     id
                     username
@@ -157,6 +161,7 @@ export const GET_POSTS_BY_USER = gql`
             linkUrl
             imageUrl
             ephemeralUntil
+            isSaved
             author {
                 id
                 username

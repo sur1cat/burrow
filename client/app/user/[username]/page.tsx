@@ -35,6 +35,7 @@ export default function UserProfilePage() {
                 linkUrl?: string;
                 imageUrl?: string;
                 ephemeralUntil?: string;
+                isSaved?: boolean;
                 author: { id: string; username: string };
                 poll?: {
                     question: string;
@@ -181,6 +182,7 @@ export default function UserProfilePage() {
                             linkUrl?: string;
                             imageUrl?: string;
                             ephemeralUntil?: string;
+                            isSaved?: boolean;
                             author: { id: string; username: string };
                             poll?: {
                                 question: string;
@@ -193,6 +195,7 @@ export default function UserProfilePage() {
                                 post={{
                                     ...post,
                                     type: post.type as "text" | "image" | "link" | "poll",
+                                    isSaved: post.isSaved ?? false,
                                 }}
                             />
                         ))}

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Post, Comment, Reaction, IPost } from '../../models';
+import { Post, Comment, Reaction, User, IPost } from '../../models';
 import { AuthenticationError, ForbiddenError, NotFoundError, ValidationError } from '../../utils/errors';
 import { validate, createPostSchema, updatePostSchema } from '../../utils/validators';
 import { Context, requireAuth } from '../context';
@@ -303,6 +303,15 @@ export const postResolvers = {
         endsAt: parent.poll.endsAt,
         totalVotes: parent.poll.options.reduce((sum, opt) => sum + opt.votes, 0),
       };
+    },
+
+    isSaved: async (parent: IPost, _: unknown, context: Context) => {
+      if (!context.user) return false;
+      const user = await User.findById(context.user._id);
+      if (!user) return false;
+      return user.savedPosts.some(
+        (postId) => postId.toString() === parent._id.toString()
+      );
     },
   },
 };

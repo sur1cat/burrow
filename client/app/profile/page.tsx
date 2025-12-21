@@ -50,6 +50,7 @@ export default function ProfilePage() {
                 linkUrl?: string;
                 imageUrl?: string;
                 ephemeralUntil?: string;
+                isSaved?: boolean;
                 poll?: {
                     question: string;
                     options: { id: string; text: string; votes: number; hasVoted: boolean }[];
@@ -419,6 +420,7 @@ export default function ProfilePage() {
                                 linkUrl?: string;
                                 imageUrl?: string;
                                 ephemeralUntil?: string;
+                                isSaved?: boolean;
                                 poll?: {
                                     question: string;
                                     options: { id: string; text: string; votes: number; hasVoted: boolean }[];
@@ -430,6 +432,7 @@ export default function ProfilePage() {
                                     post={{
                                         ...post,
                                         type: post.type as "text" | "image" | "link" | "poll",
+                                        isSaved: post.isSaved ?? false,
                                         author: {
                                             id: profileData?.id || displayUser?.id || "",
                                             username: displayUser?.username || "",

@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { ADD_COMMENT } from "@/graphql/mutations/posts";
-import { GET_COMMENTS } from "@/graphql/queries/comments";
+import { useAuthStore } from "@/store/auth.store";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export default function CommentForm({ postId }: { postId: string }) {
     const [text, setText] = useState("");
-    const [addComment, { loading }] = useMutation(ADD_COMMENT, {
-        refetchQueries: [{ query: GET_COMMENTS, variables: { postId } }],
-    });
+    const user = useAuthStore((s) => s.user);
+    const { requireAuth } = useRequireAuth();
+    const [addComment, { loading }] = useMutation(ADD_COMMENT);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -24,6 +25,18 @@ export default function CommentForm({ postId }: { postId: string }) {
             console.error("Failed to add comment:", error);
         }
     };
+
+    if (!user) {
+        return (
+            <button
+                type="button"
+                className="btn btn-outline w-full"
+                onClick={() => requireAuth(() => {})}
+            >
+                Sign up to comment
+            </button>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-2">
