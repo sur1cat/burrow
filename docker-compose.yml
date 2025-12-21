@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
   mongo:
     image: mongo:7
     container_name: burrow-mongo
@@ -23,7 +22,6 @@ services:
     networks:
       - burrow-network
 
-  # Mongo Express (Optional - for DB management)
   mongo-express:
     image: mongo-express:latest
     container_name: burrow-mongo-express
@@ -42,7 +40,6 @@ services:
     networks:
       - burrow-network
 
-  # GraphQL API Server
   api:
     build:
       context: ./server
@@ -70,7 +67,6 @@ services:
     networks:
       - burrow-network
 
-  # Next.js Client
   client:
     build:
       context: ./client
