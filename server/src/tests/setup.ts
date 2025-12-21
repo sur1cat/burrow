@@ -3,8 +3,14 @@ import mongoose from 'mongoose';
 
 let mongoServer: MongoMemoryServer;
 
+jest.setTimeout(60000);
+
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
+  mongoServer = await MongoMemoryServer.create({
+    binary: {
+      downloadDir: './node_modules/.cache/mongodb-memory-server/mongodb-binaries',
+    },
+  });
   const mongoUri = mongoServer.getUri();
   await mongoose.connect(mongoUri);
 });
